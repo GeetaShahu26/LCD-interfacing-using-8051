@@ -1,0 +1,128 @@
+A51 MACRO ASSEMBLER  LCD                                                                  08/24/2025 09:00:14 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.7.0
+OBJECT MODULE PLACED IN .\Objects\lcd.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5\C51\BIN\A51.EXE lcd.asm SET(SMALL) DEBUG PRINT(.\Listings\lcd.lst) OBJECT(.\Objects\lcd
+                      .obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG 0000H
+0000 020030            2     LJMP MAIN
+                       3     
+0030                   4     ORG 0030H
+0030                   5     MAIN:
+0030 117D              6         ACALL DELAY_15MS    ; Wait for LCD power-on initialization
+                       7         
+0032 7438              8         MOV A, #38H         ; Function set: 2 lines, 5x7 matrix
+0034 1155              9         ACALL COM_WRITE
+                      10         
+0036 740E             11         MOV A, #0EH         ; Display on, cursor off
+0038 1155             12         ACALL COM_WRITE
+                      13         
+003A 7406             14         MOV A, #06H         ; Entry mode: increment cursor, no shift
+003C 1155             15         ACALL COM_WRITE
+                      16         
+003E 7401             17         MOV A, #01H         ; Clear display
+0040 1155             18         ACALL COM_WRITE
+                      19         
+0042 7480             20         MOV A, #80H         ; Set DDRAM address: first line, first position
+0044 1155             21         ACALL COM_WRITE
+                      22         
+0046 900084           23         MOV DPTR, #MY_STR   ; Load string address into data pointer
+                      24     
+0049                  25     DISPLAY_LOOP:
+0049 7400             26         MOV A, #00H         ; Clear accumulator
+004B 93               27         MOVC A, @A+DPTR     ; Get character from code memory
+004C 6005             28         JZ FINISH           ; If null terminator, jump to finish
+004E 1162             29         ACALL DATA_WRITE    ; Write character to LCD
+0050 A3               30         INC DPTR            ; Point to next character
+0051 80F6             31         SJMP DISPLAY_LOOP   ; Repeat loop
+                      32     
+0053                  33     FINISH:
+0053 80FE             34         SJMP $              ; Infinite loop (end of program)
+                      35     
+                      36     ;----- Command Write Subroutine ------
+0055                  37     COM_WRITE:
+0055 F590             38         MOV P1, A           ; Send command to data pins (D0-D7)
+0057 C2A1             39         CLR P2.1            ; RS = 0 (Command mode)
+0059 D2A2             40         SETB P2.2           ; E = 1
+005B 116F             41         ACALL SHORT_DELAY   ; Enable pulse width delay
+005D C2A2             42         CLR P2.2            ; E = 0 (Creates falling edge)
+005F 1174             43         ACALL DELAY_ROUTINE ; Command processing delay
+0061 22               44         RET
+                      45     
+                      46     ;----- Data Write Subroutine ------
+0062                  47     DATA_WRITE:
+0062 F590             48         MOV P1, A           ; Send data to data pins (D0-D7)
+0064 D2A1             49         SETB P2.1           ; RS = 1 (Data mode)
+0066 D2A2             50         SETB P2.2           ; E = 1
+0068 116F             51         ACALL SHORT_DELAY   ; Enable pulse width delay
+006A C2A2             52         CLR P2.2            ; E = 0 (Creates falling edge)
+006C 1174             53         ACALL DELAY_ROUTINE ; Data processing delay
+006E 22               54         RET
+                      55     
+                      56     ;----- Short Delay for Enable Pulse ------
+006F                  57     SHORT_DELAY:
+A51 MACRO ASSEMBLER  LCD                                                                  08/24/2025 09:00:14 PAGE     2
+
+006F 7F32             58         MOV R7, #50
+0071                  59         SD_LOOP:
+0071 DFFE             60             DJNZ R7, SD_LOOP
+0073 22               61         RET
+                      62     
+                      63     ;----- Main Delay Routine ------
+0074                  64     DELAY_ROUTINE:
+0074 7DFF             65         MOV R5, #0FFH
+0076                  66     DL_LOOP1:
+0076 7EFF             67         MOV R6, #0FFH
+0078                  68     DL_LOOP2:
+0078 DEFE             69         DJNZ R6, DL_LOOP2
+007A DDFA             70         DJNZ R5, DL_LOOP1
+007C 22               71         RET
+                      72     
+                      73     ;----- 15ms Power-On Delay ------
+007D                  74     DELAY_15MS:
+007D 7C64             75         MOV R4, #100
+007F                  76     PWR_LOOP:
+007F 1174             77         ACALL DELAY_ROUTINE
+0081 DCFC             78         DJNZ R4, PWR_LOOP
+0083 22               79         RET
+                      80     
+                      81     ;----- String Data ------
+0084                  82     MY_STR: 
+0084 47656574         83         DB 'Geeta Shahu', 0   ; Null-terminated string
+0088 61205368                
+008C 61687500                
+                      84     
+                      85     END
+A51 MACRO ASSEMBLER  LCD                                                                  08/24/2025 09:00:14 PAGE     3
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+COM_WRITE. . . . .  C ADDR   0055H   A   
+DATA_WRITE . . . .  C ADDR   0062H   A   
+DELAY_15MS . . . .  C ADDR   007DH   A   
+DELAY_ROUTINE. . .  C ADDR   0074H   A   
+DISPLAY_LOOP . . .  C ADDR   0049H   A   
+DL_LOOP1 . . . . .  C ADDR   0076H   A   
+DL_LOOP2 . . . . .  C ADDR   0078H   A   
+FINISH . . . . . .  C ADDR   0053H   A   
+MAIN . . . . . . .  C ADDR   0030H   A   
+MY_STR . . . . . .  C ADDR   0084H   A   
+P1 . . . . . . . .  D ADDR   0090H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+PWR_LOOP . . . . .  C ADDR   007FH   A   
+SD_LOOP. . . . . .  C ADDR   0071H   A   
+SHORT_DELAY. . . .  C ADDR   006FH   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
