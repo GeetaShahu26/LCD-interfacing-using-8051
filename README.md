@@ -181,7 +181,7 @@ Interfacing in 4-bit mode to save GPIO pins.
 12. Contributors
 Developed by: Geeta Shahu
 
-Guided by: [Your Instructor's Name/Your Name]
+Guided by: prof. Muhammad Waseem Khanooni Sir
 
 13. References
 Datasheet: AT89C51 Microcontroller
